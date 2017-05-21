@@ -5,7 +5,7 @@ const long double PI = 3.141592653589793238L;
 
 #define OUTPUT_FILE "graph.txt"
 #define EXACT_FILE "graph_ex.txt"
-#define EULER
+//#define EULER
 
 //using namespace std;
 
@@ -71,21 +71,23 @@ class Problem {
 
   // exact solution
   double exactY(double x, double c1, double c2){
-    return c1*exp(4*x)+c2*exp(-4*x)+1/2;
+    return c1*exp(4*x)+c2*exp(-4*x)+0.5;
   }
   double exactY_(double x, double c1, double c2){
-    return 4*c1*exp(4*x)-4*c2*exp(-4*x)+1/2;
+    return 4*c1*exp(4*x)-4*c2*exp(-4*x);
   }
   double exactC1(){
-    return exp(-2*PI) * (gamma2/4 - (gamma1+1/2)*exp(-2*PI))/(1+exp(4*PI));
+    //\frac{\frac{\gamma_2}{4} + \left(\gamma_1 - \frac{1}{2}\right) e^{-2\pi}}{e^{2\pi} + e^{-2\pi}}
+    return (gamma2/4.0 - (gamma1-0.5)*exp(-2*PI))/(exp(2*PI)+exp(-2*PI));
+    //return exp(-2*PI) * (gamma2/4 - (gamma1-1/2)*exp(-2*PI))/(1+exp(-2*PI));
   }
-  double exactC2(){
-    return gamma1 - exactC1() - 1/2;
+  double exactC2(double c1){
+    return (gamma1 - c1 - 0.5);
   }
   void dumpExactSolution(int num = 100, FILE *fout = stdout){
     double h = (ib-ia)/num;
     double c1 = exactC1();
-    double c2 = exactC2();
+    double c2 = exactC2(c1);
 
     for(int i = 0; i <= num; i++){
       double x = i*h+ia;
@@ -170,7 +172,7 @@ int main(int argc, char **argv){
   Solver solver(problem,1000);
 
   problem.alpha = -0.4;
-  for(int k = 0; k<1; k++){
+  for(int k = 0; k<100; k++){
     printf("alpha(%d) = %.11f\n", k, problem.alpha);
     solver.solve();
     double error = fabs(problem.aimAt(solver.getSolution()));
